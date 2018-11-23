@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>购物车</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="css/ext.css"/>
+</head>
+<body>
+<div class="container">
+    <div class="row box" style="margin-bottom: 2rem; margin-top: 2rem;">
+        <div class="col-md-10 column">
+            <h1 style="color: red; margin: auto;">我的购物车</h1>
+        </div>
+        <div class="col-md-2 column" align="right">
+            <a href="index.html">返回首页</a>
+        </div>
+    </div>
+    <div class="row well well-sm">
+        <div class="col-md-2 column" align="left">
+            <input type="checkbox"/>&nbsp;全选
+        </div>
+        <div class="col-md-3 column" align="left">商品信息</div>
+        <div class="col-md-2 column" align="left">单价</div>
+        <div class="col-md-2 column" align="left">数量</div>
+        <div class="col-md-2 column" align="left">金额</div>
+        <div class="col-md-1 column" align="left">操作</div>
+    </div>
+    <!-- 购物车列表 -->
+    <div id="well-sm">
+
+    </div>
+    <!-- 结算 -->
+    <div class="row well well-sm">
+        <div class="col-md-12 column" align="right" style="margin-top: 1rem;">
+            <p style="color: red; font-size: large; font-weight: bold;">合计：¥ </p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 column" align="right">
+            <input type="button" class="btn btn-primary btn-lg" value="结算" onclick="location.href='order.html'"/>
+        </div>
+    </div>
+</div>
+</body>
+<script src="js/operation.js"></script>
+<script src="js/jquery-3.3.1.min.js"></script>
+<script>
+    $(function () {
+        $.ajax({
+            type: 'get',
+            url: 'ShoppingCar?action=query',
+            success: function (data) {
+                if (data.msg != null) {
+                    alert(data.msg);
+                } else {
+                    $.each(data, function (i, v) {
+                        $("#well-sm").append("<div class=\"row well well-sm box\">" +
+                            "<div class=\"col-md-2 column\" align=\"left\">" +
+                            "<input type=\"checkbox\"/>\n" +
+                            "<img alt=\"120x120\" width=\"120rem\" height=\"120rem\" src='/img/" + v.c_img + "'/>\n" +
+                            "</div>" +
+                            "<div class=\"col-md-3 column\" align=\"left\">\n" +
+                            "\t\t\t<p>\n" +
+                            v.c_particulars +
+                            "\t\t\t</p>\n" +
+                            "\t\t</div>\n" +
+                            "\t\t<div class=\"col-md-2 column\" align=\"left\">\n" +
+                            "\t\t\t<p style=\"font-size: large;\">¥" + v.c_price + "</p>\n" +
+                            "\t\t</div>\n" +
+                            "\t\t<div class=\"col-md-2 column\" align=\"left\">\n" +
+                            "\t\t\t<input type=\"number\" id='buyNum' name=\"buyNum\" value='" + v.s_count + "'>\n" +
+                            "\t\t</div>\n" +
+                            "\t\t<div class=\"col-md-2 column\" align=\"left\">\n" +
+                            "\t\t\t<p style=\"color: red; font-size: large;\">¥" + v.c_price + "</p>\n" +
+                            "\t\t</div>\n" +
+                            "\t\t<div class=\"col-md-1 column\" align=\"left\">\n" +
+                            "\t\t\t<input type=\"button\" class=\"btn btn-danger\" name=\"del\" value=\"删除\"/>\n" +
+                            "\t\t</div>\n" +
+                            "\t</div>")
+                        $("#buyNum").on("change", function () {
+                            alert("ok");
+                        });
+                    });
+                }
+
+            }
+        });
+    });
+</script>
+</html>

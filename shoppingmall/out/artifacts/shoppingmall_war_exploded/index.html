@@ -1,0 +1,250 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>挖宝网</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="css/ext.css"/>
+</head>
+<style>
+
+</style>
+<body>
+<div class="container">
+    <div class="row box" style="margin-top: 2rem; margin-bottom: 2rem;">
+        <div class="col-md-3 column">
+            <!-- 修改bootstrap中h1的margin-->
+            <h1 style="color: red; margin: auto;">挖宝网</h1>
+        </div>
+        <div class="col-md-6 column">
+            <form role="form" class="form-inline">
+                <div class="form-group">
+                    <input type="text" size="60" class="form-control" id="search" placeholder="搜一下"/>
+                    <input type="button" id="searchbtn" class="btn btn-primary" value="搜索"/>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-2 column" align="right">
+            <a id="carthref" href="cart.html"><span class="badge pull-right">0</span>我的购物车</a>
+        </div>
+        <span id="user" style="font-size: 20px;color: #449d44;"></span>
+        <div class="col-md-1 column" align="right">
+            <a href="#" id="loginhref">登陆</a>/<a href="#" id="reghref">注册</a>
+        </div>
+    </div>
+    <!-- 商品列表 -->
+    <div class="row">
+        <div class="col-md-2 column">
+            <ul id="type" class="nav navcolor nav-pills nav-stacked">
+                <li class="active">
+                    <a href="#">分类</a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-md-10 column">
+            <div id="cclist" class="row">
+            </div>
+        </div>
+    </div>
+    <!-- 模态框 -->
+    <div id="modal"></div>
+</div>
+</body>
+<script src="js/jquery-3.3.1.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/operation.js"></script>
+
+<script>
+
+    //查询购物车数量的方法
+    function count() {
+        $.get("shoppingCount", function (data) {
+            if(data!=null){
+                $(".pull-right").text(data);
+            }
+        }, "json");
+    }
+    //页面加载获取用户名
+    function username(){
+        $.get("GetUserName",function (data) {
+            if(data!=null){
+                $("#user").text(data);
+            }
+        },"json")
+    }
+    //窗体加载
+    $(function () {
+        count();
+        //获取商品
+        $.get("Shopping_list", function (data) {
+            $.each(data, function (i, v) {
+                $("#cclist").append($("<div class=\"col-md-4\">" +
+                    "<div class=\"thumbnail\">" +
+                    "<img alt=\"300x300\" src='/images/" + v.c_img + "' />" +
+                    "<div class=\"caption\">" +
+                    "<h3 style=\"color: red; font-weight: bold;\">¥" + v.c_price + "</h3>" +
+                    "<p>" +
+                    "" + v.c_particulars + "" +
+                    "</p>" +
+                    "<p>" +
+                    "<a class=\"btn btn-primary addcart\" id='" + v.c_id + "' href=\"#\">加入购物车</a>\n" +
+                    "</p>" +
+                    "</div>" +
+                    "</div>" +
+                    "</div>"));
+            });
+        }, "json");
+
+
+        //获取类型
+        $.get("Type_list", function (data) {
+            $.each(data, function (i, v) {
+                $("#type").append("<li>" +
+                    "<a class='types' id='" + v.t_id + "' href=\"#\">" + v.t_name + "</a>" +
+                    "</li>");
+            });
+        }, "json")
+
+        //类型选择
+        $("#type").on("click", ".types", function () {
+            $("#cclist").text("");
+            var cid = event.target['id'];
+            $.ajax({
+                type: 'POST',
+                data: {id: cid},
+                dataType: "json",
+                url: 'Type_list',
+                success: function (data) {
+                    $.each(data, function (i, v) {
+                        $("#cclist").append($("<div class=\"col-md-4\">" +
+                            "<div class=\"thumbnail\">" +
+                            "<img alt=\"300x300\"  src='/img/" + v.c_img + "' />\n" +
+                            "<div class=\"caption\">" +
+                            "<h3 style=\"color: red; font-weight: bold;\">¥" + v.c_price + "</h3>" +
+                            "<p>" +
+                            "" + v.c_particulars + "" +
+                            "</p>" +
+                            "<p>" +
+                            "<a class=\"btn btn-primary addcart\" id='" + v.c_id + "' href=\"#\">加入购物车</a>\n" +
+                            "</p>" +
+                            "</div>" +
+                            "</div>" +
+                            "</div>"));
+                    });
+                }
+            });
+        });
+        //加入购物车
+        $("#cclist").on("click", ".addcart", function () {
+            var id= event.target['id'];
+            $.ajax({
+                type: 'post',
+                data: {c_id:id,s_count:1,s_state:0},
+                url: 'ShoppingCar',
+                success: function (data) {
+                    if (data.msg!= null) {
+                        alert(data.msg);
+                        count();
+                    }
+                }
+            });
+        });
+
+        //搜索
+        $("#searchbtn").on("click", function () {
+            $("#cclist").text("");
+            var val = $("#search").val();
+            $.ajax({
+                type: 'post',
+                url: 'Shopping_list',
+                data: {val: val},
+                dataType: "json",
+                success: function (data) {
+                    $.each(data, function (i, v) {
+                        $("#cclist").append($("<div class=\"col-md-4\">" +
+                            "<div class=\"thumbnail\">" +
+                            "<img alt=\"300x300\" src='/img/" + v.c_img + "' />\n" +
+                            "<div class=\"caption\">" +
+                            "<h3 style=\"color: red; font-weight: bold;\">¥" + v.c_price + "</h3>" +
+                            "<p>" +
+                            "" + v.c_particulars + "" +
+                            "</p>" +
+                            "<p>" +
+                            "<a class=\"btn btn-primary addcart\" id='" + v.c_id + "' href=\"#\">加入购物车</a>\n" +
+                            "</p>" +
+                            "</div>" +
+                            "</div>" +
+                            "</div>"));
+                    });
+                }
+            })
+        });
+
+    });
+</script>
+<script>
+    $(function () {
+        //登录
+        $("#loginhref").on("click", function () {
+            $("#modal").load("login.html", function () {
+                $("#account").text("");
+                $("#password").text("");
+                $('#loginModal').modal('show');
+                $("#login").on("click", function () {
+                    $.ajax({
+                        type: 'POST',
+                        url: "Login",
+                        data: {"account": $("#account").val(), "pwd": $("#password").val()},
+                        success: function (data) {
+                            alert(data.msg);
+                            $("#user").text(data.username);
+                            $("#loginhref").attr("hidden", "hidden");
+                            $('#loginModal').modal('hide');
+                            count();
+                        }
+                    });
+                });
+            });
+        });
+        //注册
+        $("#reghref").on("click", function () {
+            //把文本框清空
+            $("#account").val("");
+            $("#password").val("");
+            $("#tel").val("");
+            $("#email").val("");
+
+            $("#modal").load("reg.html", function () {
+                $('#regModal').modal('show')
+                //异步请求
+                $("#account").blur(function () {
+                    $.ajax({
+                        type: 'get',
+                        url: 'Reg',
+                        data: {"account": $("#account").val()},
+                        success: function (data) {
+                            alert(data.msg);
+                        }
+                    });
+                });
+
+                $("#btn").on("click", function () {
+                    $.ajax({
+                        type: 'POST',
+                        url: 'Reg',
+                        data: {
+                            account: $("#account").val(), password: $("#password").val(),
+                            tel: $("#tel").val(), email: $("#email").val()
+                        },
+                        success: function (data) {
+                            alert(data.msg);
+                            $("#user").text(data.name);
+                            $('#regModal').modal('hide');
+                        }
+                    });
+                });
+            });
+        });
+    });
+</script>
+</html>
